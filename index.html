@@ -1,70 +1,129 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DITOH // NEURAL_LINKS</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NEURAL LINKS</title>
+
+<link rel="stylesheet" href="style.css">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 </head>
+
 <body>
 
-    <div class="app-container">
-        <header class="header">
-            <div class="header-meta">CORE_SYSTEM // ACCESS_GRANTED</div>
-            <h1>NEURAL<br>LINKS</h1>
-            <p class="header-meta" style="color:#888">DESIGNED BY DITOH // HUB BRAIN OPERATOR</p>
-        </header>
+<div class="scanline"></div>
 
-        <nav id="links-container" class="links-grid">
-            </nav>
+<div class="container">
 
-        <footer class="footer">
-            <div>STATUS: <span style="color:#00ff00">ONLINE</span></div>
-            <div>FOUND_DEV: <b>DITOH</b></div>
-            <a href="admin.html" style="color:inherit; text-decoration:none;">[ACC_CORE]</a>
-        </footer>
-    </div>
+<div class="hud">
 
-    <div style="position: fixed; bottom: 40px; right: 20px; writing-mode: vertical-rl; font-family: 'JetBrains Mono'; font-size: 9px; color: #222; letter-spacing: 5px;">
-        CONNECTION_ESTABLISHED // 2026
-    </div>
+<div class="profile">
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+<img src="profile.png" class="avatar">
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
-            authDomain: "neural-links.firebaseapp.com",
-            projectId: "neural-links",
-            storageBucket: "neural-links.firebasestorage.app",
-            messagingSenderId: "1040211261030",
-            appId: "1:1040211261030:web:2e8ea7a03bc21e45319fa7"
-        };
+<h1>NEURAL LINKS</h1>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+<p class="status">SYSTEM ACTIVE</p>
 
-        async function loadLinks() {
-            const container = document.getElementById('links-container');
-            const q = query(collection(db, "links"), orderBy("priority", "asc"));
-            
-            try {
-                const snap = await getDocs(q);
-                container.innerHTML = '';
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    container.innerHTML += `
-                        <a href="${data.url}" class="link-card" target="_blank">
-                            <span class="title">${data.title}</span>
-                            <span class="category">REDIRECT_LINK</span>
-                        </a>`;
-                });
-            } catch (e) {
-                container.innerHTML = "<p style='color:red'>ERRO_DE_SINCRO</p>";
-            }
-        }
-        loadLinks();
-    </script>
+<div class="radar"></div>
+
+</div>
+
+<div id="links" class="links">
+
+<!-- Skeleton -->
+<div class="skeleton"></div>
+<div class="skeleton"></div>
+<div class="skeleton"></div>
+
+</div>
+
+<footer>
+
+Found Dev DITOH
+
+</footer>
+
+</div>
+
+</div>
+
+<script>
+
+const firebaseConfig = {
+apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
+authDomain: "neural-links.firebaseapp.com",
+projectId: "neural-links",
+storageBucket: "neural-links.firebasestorage.app",
+messagingSenderId: "1040211261030",
+appId: "1:1040211261030:web:2e8ea7a03bc21e45319fa7"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+const linksContainer = document.getElementById("links");
+
+function validateURL(url) {
+
+if (!url.startsWith("http")) {
+
+return "https://" + url;
+
+}
+
+return url;
+
+}
+
+function createLink(title, url) {
+
+const a = document.createElement("a");
+
+a.href = validateURL(url);
+
+a.target = "_blank";
+
+a.className = "link";
+
+a.innerText = title.toUpperCase();
+
+linksContainer.appendChild(a);
+
+}
+
+function loadLinks() {
+
+linksContainer.innerHTML = "";
+
+db.collection("links")
+.orderBy("priority")
+
+.get()
+
+.then(snapshot => {
+
+snapshot.forEach(doc => {
+
+const data = doc.data();
+
+createLink(data.title, data.url);
+
+});
+
+});
+
+}
+
+loadLinks();
+
+</script>
+
 </body>
 </html>
