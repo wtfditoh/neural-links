@@ -5,111 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CORE_ACC // HUB BRAIN</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Ajustes específicos para a área de administração */
-        .admin-wrapper {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 60px 20px;
-        }
-        .form-section {
-            background: #0a0a0a;
-            padding: 30px;
-            border: 1px solid #1a1a1a;
-            margin-bottom: 40px;
-        }
-        .form-section h2 {
-            font-size: 1.2rem;
-            margin-bottom: 25px;
-            letter-spacing: 2px;
-            color: #fff;
-            border-left: 4px solid #fff;
-            padding-left: 15px;
-        }
-        label {
-            display: block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: #666;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-        input {
-            width: 100%;
-            background: #111;
-            border: 1px solid #222;
-            color: #fff;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-family: 'Inter', sans-serif;
-            transition: 0.3s;
-        }
-        input:focus {
-            border-color: #fff;
-            outline: none;
-        }
-        .action-btn {
-            width: 100%;
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 20px;
-            font-weight: 900;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .action-btn:hover {
-            background: #888;
-        }
-        .action-btn:disabled {
-            background: #333;
-            color: #666;
-            cursor: not-allowed;
-        }
-        .status-msg {
-            margin-top: 15px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            text-align: center;
-        }
-    </style>
 </head>
 <body>
-
-    <div class="admin-wrapper">
-        <header style="margin-bottom: 50px;">
-            <a href="index.html" style="color: #666; text-decoration: none; font-size: 12px;">< VOLTAR AO SISTEMA</a>
-            <h1 style="font-size: 2.5rem; font-weight: 900; margin-top: 20px;">CORE_CONTROL</h1>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-meta"><a href="index.html" style="color:inherit">< VOLTAR</a></div>
+            <h1 style="font-size: 3rem;">CORE_ACC</h1>
         </header>
 
-        <div class="form-section">
-            <h2>NOVA_CONEXÃO</h2>
-            
-            <label>NOME DO LINK (EX: PORTFÓLIO BEHANCE)</label>
-            <input type="text" id="linkTitle" placeholder="Digite o título...">
-
-            <label>URL DE DESTINO (HTTPS://...)</label>
-            <input type="text" id="linkUrl" placeholder="Cole o link aqui...">
-
-            <label>PRIORIDADE NO SISTEMA (ORDEM: 1, 2, 3...)</label>
-            <input type="number" id="linkPriority" placeholder="Ex: 1">
-
-            <label>MASTER ACCESS KEY (SENHA)</label>
-            <input type="password" id="masterKey" placeholder="Sua senha secreta">
-
-            <button id="injectBtn" class="action-btn">INJETAR NO BANCO DE DADOS</button>
-            <div id="statusMsg" class="status-msg"></div>
+        <div class="admin-box">
+            <input type="text" id="title" placeholder="NOME DO PROJETO">
+            <input type="text" id="url" placeholder="URL COMPLETA (COM HTTPS://)">
+            <input type="number" id="priority" placeholder="PRIORIDADE (1, 2, 3...)">
+            <input type="password" id="pass" placeholder="MASTER_KEY">
+            <button id="addBtn" class="btn-inject">INJETAR DADOS</button>
+            <p id="status" style="margin-top:15px; font-family:'JetBrains Mono'; font-size:10px; text-align:center;"></p>
         </div>
-
-        <p style="text-align: center; color: #222; font-size: 10px; letter-spacing: 2px;">HUB BRAIN // NEURAL INTERFACE v2.4.0</p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-        // CONFIGURAÇÃO QUE VOCÊ ME MANDOU
         const firebaseConfig = {
             apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
             authDomain: "neural-links.firebaseapp.com",
@@ -122,57 +39,26 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const injectBtn = document.getElementById('injectBtn');
-        const statusMsg = document.getElementById('statusMsg');
+        document.getElementById('addBtn').addEventListener('click', async () => {
+            const t = document.getElementById('title').value;
+            const u = document.getElementById('url').value;
+            const p = document.getElementById('priority').value;
+            const k = document.getElementById('pass').value;
+            const s = document.getElementById('status');
 
-        injectBtn.addEventListener('click', async () => {
-            const title = document.getElementById('linkTitle').value;
-            const url = document.getElementById('linkUrl').value;
-            const priority = document.getElementById('linkPriority').value;
-            const key = document.getElementById('masterKey').value;
-
-            // VALIDAÇÃO BÁSICA
-            if(!title || !url || !key) {
-                statusMsg.style.color = "red";
-                statusMsg.innerText = "ERRO: CAMPOS OBRIGATÓRIOS VAZIOS.";
-                return;
-            }
-
-            // SENHA DE SEGURANÇA (Mude 'DITOH123' para o que você quiser)
-            if(key !== "DITOH123") {
-                statusMsg.style.color = "red";
-                statusMsg.innerText = "ERRO: ACESSO NEGADO. CHAVE INCORRETA.";
-                return;
-            }
-
-            // INÍCIO DO PROCESSO
-            injectBtn.disabled = true;
-            injectBtn.innerText = "SINCRONIZANDO...";
-            statusMsg.style.color = "#888";
-            statusMsg.innerText = "CONECTANDO AO NÚCLEO FIREBASE...";
+            if(k !== "DITOH123") { s.innerText = "ACESSO_NEGADO"; return; }
 
             try {
+                s.innerText = "CONECTANDO...";
                 await addDoc(collection(db, "links"), {
-                    title: title.toUpperCase(),
-                    url: url,
-                    priority: parseInt(priority) || 99
+                    title: t.toUpperCase(),
+                    url: u,
+                    priority: parseInt(p) || 99
                 });
-
-                statusMsg.style.color = "#00ff00";
-                statusMsg.innerText = "SUCESSO: LINK INJETADO NA REDE NEURAL.";
-                
-                // Limpa campos
-                document.getElementById('linkTitle').value = "";
-                document.getElementById('linkUrl').value = "";
-                document.getElementById('linkPriority').value = "";
-                
-            } catch (error) {
-                console.error(error);
-                statusMsg.style.color = "red";
-                statusMsg.innerText = "ERRO CRÍTICO: FALHA NA COMUNICAÇÃO.";
-            } finally {
-                injectBtn.disabled = false;
-                injectBtn.innerText = "INJETAR NO BANCO DE DADOS";
+                s.innerText = "SUCESSO_NA_INJEÇÃO";
+                location.href = "index.html";
+            } catch (e) {
+                s.innerText = "ERRO_DE_SISTEMA";
             }
         });
     </script>
