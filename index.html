@@ -2,23 +2,29 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Links | Hub Brain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neural Links | Hub Brain System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="profile">
-        <div class="avatar"></div>
-        <h1 style="margin-top: 15px; letter-spacing: 2px;">NEURAL LINKS</h1>
-        <p style="color: #888; font-size: 0.9rem;">HUB BRAIN SYSTEM</p>
+        <div class="avatar-container">
+            <div class="avatar-frame"></div>
+            <img src="URL_PARA_TUA_FOTO" alt="DITOH Profile" class="avatar" id="profilePic">
+        </div>
+        <h1 class="profile-title">NEURAL LINKS</h1>
+        <p class="profile-subtitle">HUB BRAIN SYSTEM OPERATOR</p>
     </div>
 
     <div id="links-list" class="links-container">
-        <p style="text-align: center; color: #555;">Sincronizando rede neural...</p>
+        <p style="text-align: center; color: #555; font-size: 0.8rem; letter-spacing: 1px;">Sincronizando Rede Neural [STATUS: ACESSANDO FIREBASE...]</p>
     </div>
 
-    <a href="admin.html" class="admin-btn">ACESSAR NÚCLEO</a>
+    <footer class="footer">
+        STATUS: ONLINE | <span class="dev-signature">Found Dev DITOH</span>
+        <a href="admin.html" class="admin-link">ACC_CORE</a>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
@@ -41,7 +47,7 @@
             const q = query(collection(db, "links"), orderBy("priority", "asc"));
             const querySnapshot = await getDocs(q);
             
-            linksContainer.innerHTML = ''; // Limpa o carregando
+            linksContainer.innerHTML = '';
             
             querySnapshot.forEach((doc) => {
                 const link = doc.data();
@@ -51,6 +57,12 @@
                 a.innerText = link.title;
                 linksContainer.appendChild(a);
             });
+        }
+
+        // Carregar Foto do LocalStorage (Depois vamos implementar o Admin)
+        const savedPhoto = localStorage.getItem('profile_photo_url');
+        if (savedPhoto) {
+            document.getElementById('profilePic').src = savedPhoto;
         }
 
         loadLinks();
