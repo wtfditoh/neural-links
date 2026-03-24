@@ -1,67 +1,303 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CORE_ACC // HUB BRAIN</title>
-    <link rel="stylesheet" href="style.css">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ADMIN PANEL</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
 </head>
+
 <body>
-    <div class="app-container">
-        <header class="header">
-            <div class="header-meta"><a href="index.html" style="color:inherit">< VOLTAR</a></div>
-            <h1 style="font-size: 3rem;">CORE_ACC</h1>
-        </header>
 
-        <div class="admin-box">
-            <input type="text" id="title" placeholder="NOME DO PROJETO">
-            <input type="text" id="url" placeholder="URL COMPLETA (COM HTTPS://)">
-            <input type="number" id="priority" placeholder="PRIORIDADE (1, 2, 3...)">
-            <input type="password" id="pass" placeholder="MASTER_KEY">
-            <button id="addBtn" class="btn-inject">INJETAR DADOS</button>
-            <p id="status" style="margin-top:15px; font-family:'JetBrains Mono'; font-size:10px; text-align:center;"></p>
-        </div>
-    </div>
+<div class="container">
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+<div class="hud">
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
-            authDomain: "neural-links.firebaseapp.com",
-            projectId: "neural-links",
-            storageBucket: "neural-links.firebasestorage.app",
-            messagingSenderId: "1040211261030",
-            appId: "1:1040211261030:web:2e8ea7a03bc21e45319fa7"
-        };
+<!-- LOGIN -->
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+<div id="loginBox">
 
-        document.getElementById('addBtn').addEventListener('click', async () => {
-            const t = document.getElementById('title').value;
-            const u = document.getElementById('url').value;
-            const p = document.getElementById('priority').value;
-            const k = document.getElementById('pass').value;
-            const s = document.getElementById('status');
+<h2>MASTER ACCESS</h2>
 
-            if(k !== "DITOH123") { s.innerText = "ACESSO_NEGADO"; return; }
+<input 
+id="passwordInput" 
+type="password" 
+placeholder="Enter Master Key"
+>
 
-            try {
-                s.innerText = "CONECTANDO...";
-                await addDoc(collection(db, "links"), {
-                    title: t.toUpperCase(),
-                    url: u,
-                    priority: parseInt(p) || 99
-                });
-                s.innerText = "SUCESSO_NA_INJEÇÃO";
-                location.href = "index.html";
-            } catch (e) {
-                s.innerText = "ERRO_DE_SISTEMA";
-            }
-        });
-    </script>
+<button onclick="checkPassword()">
+ACCESS
+</button>
+
+</div>
+
+<!-- PAINEL -->
+
+<div id="adminPanel" style="display:none;">
+
+<h2>ADMIN PANEL</h2>
+
+<!-- ADD LINK -->
+
+<input id="title" placeholder="Title">
+
+<input id="url" placeholder="URL">
+
+<input 
+id="priority" 
+type="number" 
+placeholder="Priority"
+>
+
+<button onclick="addLink()">
+
+ADD LINK
+
+</button>
+
+<hr>
+
+<h3>LINK LIST</h3>
+
+<div id="linkList"></div>
+
+<hr>
+
+<h3>UPLOAD PROFILE PHOTO</h3>
+
+<input type="file" id="photoInput">
+
+<button onclick="uploadPhoto()">
+
+UPLOAD PHOTO
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* 🔒 SENHA */
+
+const MASTER_PASSWORD = "DITOH123";
+
+/* Firebase */
+
+const firebaseConfig = {
+apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
+authDomain: "neural-links.firebaseapp.com",
+projectId: "neural-links",
+storageBucket: "neural-links.firebasestorage.app",
+messagingSenderId: "1040211261030",
+appId: "1:1040211261030:web:2e8ea7a03bc21e45319fa7"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+/* LOGIN */
+
+function checkPassword() {
+
+const input =
+document.getElementById("passwordInput").value;
+
+if (input === MASTER_PASSWORD) {
+
+document
+.getElementById("loginBox")
+.style.display="none";
+
+document
+.getElementById("adminPanel")
+.style.display="block";
+
+loadLinks();
+
+}
+else {
+
+alert("ACCESS DENIED");
+
+}
+
+}
+
+/* VALIDAR URL */
+
+function validateURL(url) {
+
+if (!url.startsWith("http")) {
+
+return "https://" + url;
+
+}
+
+return url;
+
+}
+
+/* ADD LINK */
+
+function addLink() {
+
+const title =
+document.getElementById("title").value;
+
+const url =
+validateURL(
+document.getElementById("url").value
+);
+
+const priority =
+Number(
+document.getElementById("priority").value
+);
+
+if (!title || !url) {
+
+alert("Fill all fields");
+
+return;
+
+}
+
+db.collection("links").add({
+
+title,
+url,
+priority
+
+});
+
+}
+
+/* LOAD LINKS */
+
+function loadLinks() {
+
+db.collection("links")
+.orderBy("priority")
+.onSnapshot(snapshot => {
+
+const list =
+document.getElementById("linkList");
+
+list.innerHTML="";
+
+snapshot.forEach(doc => {
+
+const data = doc.data();
+
+const div =
+document.createElement("div");
+
+div.className="linkItem";
+
+div.innerHTML = `
+
+${data.title.toUpperCase()}
+
+<button onclick="editLink('${doc.id}')">
+✏️
+</button>
+
+<button onclick="deleteLink('${doc.id}')">
+🗑️
+</button>
+
+`;
+
+list.appendChild(div);
+
+});
+
+});
+
+}
+
+/* DELETE */
+
+function deleteLink(id) {
+
+if (confirm("Delete this link?")) {
+
+db.collection("links")
+.doc(id)
+.delete();
+
+}
+
+}
+
+/* EDIT */
+
+function editLink(id) {
+
+const newTitle =
+prompt("New Title:");
+
+const newURL =
+prompt("New URL:");
+
+const newPriority =
+prompt("New Priority:");
+
+db.collection("links")
+.doc(id)
+.update({
+
+title:newTitle,
+url:validateURL(newURL),
+priority:Number(newPriority)
+
+});
+
+}
+
+/* UPLOAD PHOTO */
+
+function uploadPhoto() {
+
+const file =
+document.getElementById("photoInput")
+.files[0];
+
+if (!file) {
+
+alert("Select a file");
+
+return;
+
+}
+
+const ref =
+storage.ref("profile.png");
+
+ref.put(file)
+.then(() => {
+
+alert("Photo Uploaded!");
+
+});
+
+}
+
+</script>
+
 </body>
-            </html>
-                
+</html>
