@@ -8,23 +8,25 @@
 </head>
 <body>
 
-    <div class="app-wrapper">
-        <header class="main-header">
-            <div class="system-id">CORE SYSTEM v2.4.0</div>
-            <h1>NEURAL<br>LINKS_</h1>
-            <p style="margin-top: 20px; color: #888; font-weight: 400;">Developed by DITOH // Hub Brain Ecosystem</p>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-meta">CORE_SYSTEM // ACCESS_GRANTED</div>
+            <h1>NEURAL<br>LINKS</h1>
+            <p class="header-meta" style="color:#888">DESIGNED BY DITOH // HUB BRAIN OPERATOR</p>
         </header>
 
-        <nav id="neural-container" class="neural-grid">
+        <nav id="links-container" class="links-grid">
             </nav>
 
-        <footer class="system-footer">
-            <div class="dev-info">
-                STATUS: <span style="color: #00ff00">ACTIVE</span><br>
-                FOUND_DEV: <b>DITOH</b>
-            </div>
-            <a href="admin.html" class="core-btn">ACC_CORE</a>
+        <footer class="footer">
+            <div>STATUS: <span style="color:#00ff00">ONLINE</span></div>
+            <div>FOUND_DEV: <b>DITOH</b></div>
+            <a href="admin.html" style="color:inherit; text-decoration:none;">[ACC_CORE]</a>
         </footer>
+    </div>
+
+    <div style="position: fixed; bottom: 40px; right: 20px; writing-mode: vertical-rl; font-family: 'JetBrains Mono'; font-size: 9px; color: #222; letter-spacing: 5px;">
+        CONNECTION_ESTABLISHED // 2026
     </div>
 
     <script type="module">
@@ -43,44 +45,26 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function fetchSystemData() {
-            const container = document.getElementById('neural-container');
+        async function loadLinks() {
+            const container = document.getElementById('links-container');
             const q = query(collection(db, "links"), orderBy("priority", "asc"));
             
             try {
-                const querySnapshot = await getDocs(q);
+                const snap = await getDocs(q);
                 container.innerHTML = '';
-
-                let i = 1;
-                querySnapshot.forEach((doc) => {
+                snap.forEach(doc => {
                     const data = doc.data();
-                    const index = i < 10 ? `0${i}` : i;
-                    
-                    const linkHTML = `
-                        <a href="${data.url}" class="link-row" style="transition-delay: ${i * 100}ms">
-                            <span class="index">${index}</span>
-                            <span class="label">${data.title}</span>
-                            <span class="arrow">→</span>
-                        </a>
-                    `;
-                    container.insertAdjacentHTML('beforeend', linkHTML);
-                    i++;
+                    container.innerHTML += `
+                        <a href="${data.url}" class="link-card" target="_blank">
+                            <span class="title">${data.title}</span>
+                            <span class="category">REDIRECT_LINK</span>
+                        </a>`;
                 });
-
-                // Gatilho para animação de entrada
-                setTimeout(() => {
-                    document.querySelectorAll('.link-row').forEach(row => {
-                        row.classList.add('visible');
-                    });
-                }, 100);
-
-            } catch (error) {
-                console.error("Erro ao acessar núcleo:", error);
-                container.innerHTML = '<p style="color: red;">CRITICAL ERROR: ACCESS_DENIED</p>';
+            } catch (e) {
+                container.innerHTML = "<p style='color:red'>ERRO_DE_SINCRO</p>";
             }
         }
-
-        fetchSystemData();
+        loadLinks();
     </script>
 </body>
 </html>
