@@ -1,155 +1,145 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
-    --bg-color: #000000;
+    --bg: #000000;
     --accent: #ffffff;
-    --dim-text: #666666;
-    --border-color: #1a1a1a;
-    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    --border: #1a1a1a;
+    --dim: #444444;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background: var(--bg-color);
+    background-color: var(--bg);
     color: var(--accent);
     font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
     min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Grão de Filme (Textura Profissional) */
+/* Efeito de Scanline Tático */
 body::before {
     content: "";
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity: 0.05;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    background-size: 100% 3px, 3px 100%;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 100;
 }
 
-/* Container Principal */
-.app-wrapper {
-    max-width: 600px;
+.app-container {
+    max-width: 650px;
     margin: 0 auto;
-    padding: 80px 24px;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Header Brutalista Expandido */
-header.main-header {
-    margin-bottom: 80px;
-}
-
-.system-id {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    color: var(--dim-text);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-}
-
-.system-id::before {
-    content: "";
-    width: 30px;
-    height: 1px;
-    background: var(--dim-text);
-    margin-right: 10px;
-}
-
-.main-header h1 {
-    font-size: clamp(3.5rem, 10vw, 5rem);
-    font-weight: 900;
-    line-height: 0.85;
-    letter-spacing: -0.04em;
-    text-transform: uppercase;
-}
-
-/* Lista de Links Dinâmica */
-.neural-grid {
-    display: flex;
-    flex-direction: column;
+    padding: 60px 24px;
     width: 100%;
 }
 
-.link-row {
+/* Header Estilo Hub Brain */
+.header {
+    margin-bottom: 80px;
+    position: relative;
+}
+
+.header h1 {
+    font-size: clamp(3rem, 12vw, 5.5rem);
+    font-weight: 900;
+    line-height: 0.8;
+    letter-spacing: -4px;
+    text-transform: uppercase;
+}
+
+.header-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Lista de Links Brutalista */
+.links-grid {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+}
+
+.link-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 32px 0;
+    padding: 35px 10px;
     text-decoration: none;
     color: var(--accent);
-    border-bottom: 1px solid var(--border-color);
-    transition: var(--transition-slow);
-    opacity: 0; /* Inicia invisível para animação */
-    transform: translateY(20px);
+    border-bottom: 1px solid var(--border);
+    transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    position: relative;
 }
 
-.link-row.visible {
-    opacity: 1;
-    transform: translateY(0);
+.link-card:hover {
+    background: rgba(255,255,255,0.03);
+    padding-left: 25px;
 }
 
-.link-row:hover {
-    border-bottom-color: var(--accent);
-    padding-left: 12px;
+.link-card .title {
+    font-size: 1.6rem;
+    font-weight: 900;
+    text-transform: uppercase;
 }
 
-.link-row .label {
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-}
-
-.link-row .index {
+.link-card .category {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--dim-text);
+    font-size: 9px;
+    color: var(--dim);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
 }
 
-.link-row .arrow {
-    font-size: 1.5rem;
-    transition: var(--transition-fast);
-}
-
-.link-row:hover .arrow {
-    transform: translateX(5px);
-}
-
-/* Footer "Found Dev" */
-footer.system-footer {
-    margin-top: 120px;
+/* Footer Único */
+.footer {
+    margin-top: auto;
+    padding: 60px 0;
+    border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    border-top: 1px solid var(--border-color);
-    padding-top: 40px;
-}
-
-.dev-info {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    line-height: 1.6;
-}
-
-.dev-info b { color: var(--accent); }
-
-.core-btn {
-    text-decoration: none;
-    color: var(--dim-text);
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    border: 1px solid var(--border-color);
-    padding: 8px 12px;
-    transition: var(--transition-fast);
+    color: var(--dim);
 }
 
-.core-btn:hover {
-    background: var(--accent);
-    color: var(--bg-color);
+.footer b { color: var(--accent); }
+
+/* Estilo Admin */
+.admin-box {
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    padding: 30px;
+}
+
+input {
+    width: 100%;
+    background: #111;
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 18px;
+    margin-bottom: 15px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+input:focus { border-color: #fff; outline: none; }
+
+.btn-inject {
+    width: 100%;
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 20px;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
 }
