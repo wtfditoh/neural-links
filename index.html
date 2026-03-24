@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Links | Hub Brain</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="profile">
+        <div class="avatar"></div>
+        <h1 style="margin-top: 15px; letter-spacing: 2px;">NEURAL LINKS</h1>
+        <p style="color: #888; font-size: 0.9rem;">HUB BRAIN SYSTEM</p>
+    </div>
+
+    <div id="links-list" class="links-container">
+        <p style="text-align: center; color: #555;">Sincronizando rede neural...</p>
+    </div>
+
+    <a href="admin.html" class="admin-btn">ACESSAR NÚCLEO</a>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
+            authDomain: "neural-links.firebaseapp.com",
+            projectId: "neural-links",
+            storageBucket: "neural-links.firebasestorage.app",
+            messagingSenderId: "1040211261030",
+            appId: "1:1040211261030:web:2e8ea7a03bc21e45319fa7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadLinks() {
+            const linksContainer = document.getElementById('links-list');
+            const q = query(collection(db, "links"), orderBy("priority", "asc"));
+            const querySnapshot = await getDocs(q);
+            
+            linksContainer.innerHTML = ''; // Limpa o carregando
+            
+            querySnapshot.forEach((doc) => {
+                const link = doc.data();
+                const a = document.createElement('a');
+                a.href = link.url;
+                a.className = 'link-card';
+                a.innerText = link.title;
+                linksContainer.appendChild(a);
+            });
+        }
+
+        loadLinks();
+    </script>
+</body>
+</html>
