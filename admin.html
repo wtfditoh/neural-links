@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Neural Links</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>NÚCLEO DE CONTROLE</h2>
+    <div class="links-container">
+        <input type="text" id="title" placeholder="Nome do Link (Ex: GitHub)" style="padding: 10px; border-radius: 5px; border: none;">
+        <input type="text" id="url" placeholder="URL (https://...)" style="padding: 10px; border-radius: 5px; border: none;">
+        <input type="number" id="priority" placeholder="Ordem (1, 2, 3...)" style="padding: 10px; border-radius: 5px; border: none;">
+        <button id="saveBtn" style="padding: 15px; background: var(--primary-neon); color: white; border: none; border-radius: 5px; font-weight: bold;">ADICIONAR LINK</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
+            authDomain: "neural-links.firebaseapp.com",
+            projectId: "neural-links",
+            storageBucket: "neural-links.firebasestorage.app",
+            messagingSenderId: "1040211261030",
+            appId: "1:1040211261030:web:2e8ea7a03bc21e45319fa7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const title = document.getElementById('title').value;
+            const url = document.getElementById('url').value;
+            const priority = parseInt(document.getElementById('priority').value);
+
+            if(title && url) {
+                await addDoc(collection(db, "links"), { title, url, priority });
+                alert("Link adicionado ao sistema!");
+                location.reload();
+            }
+        });
+    </script>
+</body>
+</html>
