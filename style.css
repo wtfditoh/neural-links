@@ -216,7 +216,7 @@ html, body {
 
 .profile-name {
     font-family: var(--display);
-    font-size: 36px; font-weight: 900;
+    font-size: 26px; font-weight: 900;
     letter-spacing: 6px;
     color: white;
     text-shadow: 0 0 30px var(--neon-glow), 0 0 60px rgba(188,19,254,0.2);
