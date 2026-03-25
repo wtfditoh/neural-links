@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEURAL LINKS — ADMIN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon: #bc13fe; --neon-dim: rgba(188,19,254,0.12);
+            --neon-glow: rgba(188,19,254,0.35);
+            --bg: #020204; --text: #e0d0ff; --text-dim: #4a3a6a;
+            --mono: 'Share Tech Mono', monospace;
+            --display: 'Orbitron', sans-serif;
+            --body: 'Rajdhani', sans-serif;
+            --error: #ff3355; --success: #00ff88;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:var(--body); min-height:100vh; overflow-x:hidden; }
+        .grid-bg { position:fixed; inset:0; background-image:linear-gradient(rgba(188,19,254,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(188,19,254,0.04) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; }
+        .scanlines { position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px); pointer-events:none; z-index:1; }
+
+        .admin-wrap { position:relative; z-index:10; max-width:480px; margin:0 auto; padding:30px 20px 60px; }
+
+        /* HEADER */
+        .admin-header { text-align:center; padding:30px 0 30px; border-bottom:1px solid rgba(188,19,254,0.15); margin-bottom:30px; }
+        .admin-eyebrow { font-family:var(--mono); font-size:9px; letter-spacing:4px; color:var(--neon); margin-bottom:10px; }
+        .admin-title { font-family:var(--display); font-size:22px; font-weight:900; letter-spacing:4px; text-shadow:0 0 20px var(--neon-glow); }
+        .admin-title span { color:var(--neon); }
+
+        /* AUTH */
+        #auth-screen, #panel-screen { display:flex; flex-direction:column; gap:16px; }
+        #panel-screen { display:none; }
+
+        /* INPUTS */
+        .field { display:flex; flex-direction:column; gap:6px; }
+        .field label { font-family:var(--mono); font-size:9px; letter-spacing:3px; color:var(--text-dim); }
+        .field input, .field select {
+            background:rgba(0,0,0,0.6); border:1px solid rgba(188,19,254,0.2);
+            border-radius:6px; padding:14px 16px;
+            color:var(--text); font-family:var(--mono); font-size:13px;
+            outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+            width:100%;
+        }
+        .field input:focus, .field select:focus {
+            border-color:var(--neon);
+            box-shadow:0 0 0 2px var(--neon-dim);
+        }
+        .field input::placeholder { color:var(--text-dim); }
+        .field select option { background:#0a0a10; }
+
+        /* BUTTONS */
+        .btn {
+            padding:15px; border:none; border-radius:6px;
+            font-family:var(--display); font-size:11px; font-weight:700;
+            letter-spacing:3px; cursor:pointer; transition:all 0.2s;
+            position:relative; overflow:hidden;
+        }
+        .btn-primary {
+            background:linear-gradient(135deg,var(--neon),#7b2ff7);
+            color:white; box-shadow:0 4px 20px var(--neon-glow);
+        }
+        .btn-primary:hover { box-shadow:0 6px 30px var(--neon-glow); transform:translateY(-1px); }
+        .btn-primary:active { transform:scale(0.98); }
+        .btn-danger { background:rgba(255,51,85,0.1); border:1px solid rgba(255,51,85,0.3); color:#ff3355; }
+        .btn-danger:hover { background:rgba(255,51,85,0.2); }
+        .btn-secondary { background:rgba(188,19,254,0.08); border:1px solid rgba(188,19,254,0.2); color:var(--neon); }
+
+        /* STATUS */
+        .status-msg {
+            font-family:var(--mono); font-size:11px; letter-spacing:2px;
+            padding:10px 14px; border-radius:4px; text-align:center;
+            display:none;
+        }
+        .status-msg.ok { display:block; background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); color:var(--success); }
+        .status-msg.err { display:block; background:rgba(255,51,85,0.08); border:1px solid rgba(255,51,85,0.2); color:var(--error); }
+
+        /* DIVIDER */
+        .divider { display:flex; align-items:center; gap:12px; margin:8px 0; }
+        .divider-line { flex:1; height:1px; background:rgba(188,19,254,0.1); }
+        .divider-text { font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:2px; }
+
+        /* LINKS LIST */
+        .links-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+        .link-item {
+            display:flex; align-items:center; gap:12px;
+            padding:14px 16px;
+            background:rgba(6,6,10,0.8); border:1px solid rgba(188,19,254,0.15);
+            border-radius:6px;
+        }
+        .link-item-info { flex:1; min-width:0; }
+        .link-item-title { font-size:13px; font-weight:700; letter-spacing:1px; color:white; }
+        .link-item-url { font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .link-item-priority { font-family:var(--mono); font-size:10px; color:var(--neon); min-width:24px; text-align:center; }
+        .btn-delete { background:none; border:none; color:#ff3355; cursor:pointer; padding:6px; font-size:18px; opacity:0.5; transition:opacity 0.2s; }
+        .btn-delete:hover { opacity:1; }
+
+        .section-title { font-family:var(--mono); font-size:10px; letter-spacing:3px; color:var(--text-dim); margin-bottom:10px; }
+        .empty-list { font-family:var(--mono); font-size:10px; color:var(--text-dim); letter-spacing:2px; text-align:center; padding:20px; }
+    </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+
+<div class="admin-wrap">
+    <div class="admin-header">
+        <div class="admin-eyebrow">// RESTRICTED ACCESS</div>
+        <div class="admin-title">NEURAL <span>ADMIN</span></div>
+    </div>
+
+    <!-- AUTH -->
+    <div id="auth-screen">
+        <div class="field">
+            <label>MASTER KEY</label>
+            <input type="password" id="master-key" placeholder="Digite a chave mestra..." onkeydown="if(event.key==='Enter') autenticar()">
+        </div>
+        <div id="auth-status" class="status-msg"></div>
+        <button class="btn btn-primary" onclick="autenticar()">AUTENTICAR →</button>
+    </div>
+
+    <!-- PAINEL -->
+    <div id="panel-screen">
+        <div class="section-title">// ADICIONAR NOVO LINK</div>
+
+        <div class="field">
+            <label>TÍTULO</label>
+            <input type="text" id="link-title" placeholder="Ex: Instagram">
+        </div>
+        <div class="field">
+            <label>URL</label>
+            <input type="url" id="link-url" placeholder="https://...">
+        </div>
+        <div class="field">
+            <label>ÍCONE</label>
+            <select id="link-icon">
+                <option value="link">🔗 Genérico</option>
+                <option value="instagram">📸 Instagram</option>
+                <option value="tiktok">🎵 TikTok</option>
+                <option value="github">💻 GitHub</option>
+                <option value="youtube">▶️ YouTube</option>
+                <option value="twitter">✖ Twitter/X</option>
+                <option value="globe">🌐 Website</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>DESCRIÇÃO (opcional)</label>
+            <input type="text" id="link-desc" placeholder="Texto abaixo do título...">
+        </div>
+        <div class="field">
+            <label>PRIORIDADE (ordem)</label>
+            <input type="number" id="link-priority" value="10" min="1" max="99">
+        </div>
+
+        <div id="add-status" class="status-msg"></div>
+        <button class="btn btn-primary" onclick="adicionarLink()">+ ADICIONAR LINK</button>
+
+        <div class="divider"><div class="divider-line"></div><div class="divider-text">LINKS ATIVOS</div><div class="divider-line"></div></div>
+
+        <div class="links-list" id="links-list">
+            <div class="empty-list">CARREGANDO...</div>
+        </div>
+
+        <div style="margin-top:16px;">
+            <button class="btn btn-secondary" onclick="location.href='index.html'" style="width:100%">← VER PÁGINA</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
+        authDomain: "neural-links.firebaseapp.com",
+        projectId: "neural-links",
+        storageBucket: "neural-links.firebasestorage.app",
+        messagingSenderId: "1040211261030",
+        appId: "1:1040211261030:web:2e8ea7a03bc21e45319fa7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const MASTER_KEY = 'DITOH2025';
+
+    window.autenticar = function() {
+        const key = document.getElementById('master-key').value;
+        const status = document.getElementById('auth-status');
+        if (key === MASTER_KEY) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('panel-screen').style.display = 'flex';
+            carregarLinks();
+        } else {
+            status.className = 'status-msg err';
+            status.textContent = '// ACESSO NEGADO — CHAVE INVÁLIDA';
+        }
+    };
+
+    async function carregarLinks() {
+        const lista = document.getElementById('links-list');
+        try {
+            const q = query(collection(db, 'links'), orderBy('priority', 'asc'));
+            const snap = await getDocs(q);
+            if (snap.empty) { lista.innerHTML = '<div class="empty-list">// NENHUM LINK CADASTRADO</div>'; return; }
+            lista.innerHTML = '';
+            snap.forEach(d => {
+                const data = d.data();
+                const item = document.createElement('div');
+                item.className = 'link-item';
+                item.innerHTML = `
+                    <div class="link-item-priority">${data.priority || '—'}</div>
+                    <div class="link-item-info">
+                        <div class="link-item-title">${data.title || '—'}</div>
+                        <div class="link-item-url">${data.url || '—'}</div>
+                    </div>
+                    <button class="btn-delete" onclick="deletarLink('${d.id}')">✕</button>
+                `;
+                lista.appendChild(item);
+            });
+        } catch(e) { lista.innerHTML = '<div class="empty-list">// ERRO AO CARREGAR</div>'; }
+    }
+
+    window.adicionarLink = async function() {
+        const title = document.getElementById('link-title').value.trim();
+        const url = document.getElementById('link-url').value.trim();
+        const icon = document.getElementById('link-icon').value;
+        const desc = document.getElementById('link-desc').value.trim();
+        const priority = parseInt(document.getElementById('link-priority').value) || 10;
+        const status = document.getElementById('add-status');
+
+        if (!title || !url) {
+            status.className = 'status-msg err';
+            status.textContent = '// TÍTULO E URL SÃO OBRIGATÓRIOS';
+            return;
+        }
+
+        const finalUrl = url.startsWith('http') ? url : 'https://' + url;
+
+        try {
+            await addDoc(collection(db, 'links'), { title, url: finalUrl, icon, desc, priority });
+            status.className = 'status-msg ok';
+            status.textContent = '// LINK ADICIONADO COM SUCESSO';
+            document.getElementById('link-title').value = '';
+            document.getElementById('link-url').value = '';
+            document.getElementById('link-desc').value = '';
+            document.getElementById('link-priority').value = '10';
+            carregarLinks();
+        } catch(e) {
+            status.className = 'status-msg err';
+            status.textContent = '// ERRO AO ADICIONAR';
+        }
+        setTimeout(() => status.className = 'status-msg', 3000);
+    };
+
+    window.deletarLink = async function(id) {
+        if (!confirm('Deletar este link?')) return;
+        try {
+            await deleteDoc(doc(db, 'links', id));
+            carregarLinks();
+        } catch(e) { alert('Erro ao deletar'); }
+    };
+</script>
+</body>
+</html>
