@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DITOH — NEURAL LINKS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold2: #e8c96a;
+            --gold-dim: rgba(201,168,76,0.12);
+            --gold-glow: rgba(201,168,76,0.3);
+            --bg: #080808;
+            --bg2: #0d0d0d;
+            --surface: rgba(255,255,255,0.025);
+            --border: rgba(201,168,76,0.15);
+            --text: #e8e4dc;
+            --text-dim: #4a4540;
+            --mono: 'DM Mono', monospace;
+            --display: 'Bebas Neue', sans-serif;
+            --body: 'Syne', sans-serif;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        html, body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            overflow-x: hidden;
+        }
+
+        /* ===================== */
+        /* FUNDO                 */
+        /* ===================== */
+        .bg-texture {
+            position: fixed; inset: 0; z-index: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9a84c' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .bg-vignette {
+            position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+        }
+
+        .bg-line-h {
+            position: fixed; left: 0; right: 0;
+            height: 1px; z-index: 0;
+            pointer-events: none;
+        }
+        .bg-line-h.top { top: 80px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+        .bg-line-h.bottom { bottom: 80px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+        .bg-line-v {
+            position: fixed; top: 0; bottom: 0;
+            width: 1px; z-index: 0;
+            pointer-events: none;
+        }
+        .bg-line-v.left { left: 60px; background: linear-gradient(180deg, transparent, var(--border), transparent); }
+        .bg-line-v.right { right: 60px; background: linear-gradient(180deg, transparent, var(--border), transparent); }
+
+        /* CORNERS */
+        .corner {
+            position: fixed; width: 20px; height: 20px;
+            z-index: 5; pointer-events: none;
+        }
+        .corner::before, .corner::after { content:''; position:absolute; background:var(--gold); opacity:0.4; }
+        .corner::before { width:100%; height:1px; }
+        .corner::after { width:1px; height:100%; }
+        .c-tl { top:20px; left:20px; }
+        .c-tr { top:20px; right:20px; }
+        .c-tr::before { right:0; }
+        .c-tr::after { right:0; }
+        .c-bl { bottom:20px; left:20px; }
+        .c-bl::before { bottom:0; }
+        .c-bl::after { bottom:0; }
+        .c-br { bottom:20px; right:20px; }
+        .c-br::before { bottom:0; right:0; }
+        .c-br::after { bottom:0; right:0; }
+
+        /* STATUS BAR */
+        .status-bar {
+            position: fixed; top:0; left:0; right:0; height:40px;
+            z-index: 100;
+            display: flex; align-items:center; justify-content:space-between;
+            padding: 0 30px;
+            background: rgba(8,8,8,0.95);
+            border-bottom: 1px solid rgba(201,168,76,0.08);
+        }
+        .status-item {
+            font-family: var(--mono);
+            font-size: 9px; letter-spacing: 2px;
+            color: var(--text-dim);
+            display: flex; align-items:center; gap:6px;
+        }
+        .status-dot {
+            width:4px; height:4px; border-radius:50%;
+            background: var(--gold);
+            box-shadow: 0 0 6px var(--gold);
+            animation: statusBlink 2s ease-in-out infinite;
+        }
+        @keyframes statusBlink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+        /* MAIN */
+        .main {
+            position: relative; z-index: 10;
+            max-width: 520px; margin: 0 auto;
+            padding: 60px 24px 80px;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* ===================== */
+        /* HERO                  */
+        /* ===================== */
+        .hero {
+            padding: 50px 0 40px;
+            display: flex; flex-direction:column;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-classification {
+            font-family: var(--mono);
+            font-size: 9px; letter-spacing: 5px;
+            color: var(--gold); opacity: 0.6;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .hero-rank {
+            font-family: var(--mono);
+            font-size: 9px; letter-spacing: 3px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+
+        .avatar-zone {
+            position: relative;
+            width: 110px; height: 110px;
+            margin-bottom: 24px;
+        }
+
+        .avatar-frame {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #1a1810, #080808);
+            border: 1px solid var(--gold);
+            display: flex; align-items:center; justify-content:center;
+            position: relative; z-index: 2;
+            box-shadow: 0 0 0 4px rgba(201,168,76,0.05), 0 0 40px rgba(201,168,76,0.15);
+        }
+
+        .avatar-frame svg { width:50px; height:50px; }
+
+        .avatar-orbit {
+            position: absolute; inset: -12px;
+            border-radius: 50%;
+            border: 1px solid rgba(201,168,76,0.12);
+            animation: orbitSpin 12s linear infinite;
+        }
+        .avatar-orbit::after {
+            content:''; position:absolute;
+            width:6px; height:6px; border-radius:50%;
+            background: var(--gold);
+            box-shadow: 0 0 10px var(--gold);
+            top:-3px; left:50%; transform:translateX(-50%);
+        }
+        @keyframes orbitSpin { to { transform:rotate(360deg); } }
+
+        .avatar-badge {
+            position: absolute; bottom:-4px; right:-4px;
+            background: var(--bg);
+            border: 1px solid var(--gold);
+            border-radius: 20px;
+            padding: 3px 8px;
+            font-family: var(--mono);
+            font-size: 8px; letter-spacing: 2px;
+            color: var(--gold);
+            z-index: 3;
+        }
+
+        .hero-name {
+            font-family: var(--display);
+            font-size: 64px; line-height: 1;
+            letter-spacing: 8px;
+            color: white;
+            text-shadow: 0 0 60px rgba(201,168,76,0.15);
+            margin-bottom: 10px;
+        }
+
+        .hero-title {
+            font-size: 11px; font-weight: 500;
+            letter-spacing: 6px; color: var(--text-dim);
+            text-transform: uppercase;
+            display: flex; align-items:center; gap:14px;
+        }
+        .hero-title::before, .hero-title::after {
+            content:'';
+            width: 30px; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold));
+            opacity: 0.4;
+        }
+        .hero-title::after { transform: scaleX(-1); }
+
+        /* DIVIDER */
+        .section-divider {
+            display: flex; align-items:center; gap:14px;
+            margin: 6px 0 20px;
+        }
+        .divider-line { flex:1; height:1px; background: var(--border); }
+        .divider-diamond {
+            width:6px; height:6px;
+            background: var(--gold); opacity:0.6;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+        }
+
+        /* READOUT */
+        .readout {
+            display: flex; justify-content:space-between; align-items:center;
+            padding: 10px 16px;
+            background: var(--gold-dim);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .readout-item {
+            font-family: var(--mono);
+            font-size: 9px; letter-spacing: 2px;
+            color: var(--text-dim);
+        }
+        .readout-item span { color: var(--gold); }
+
+        /* ===================== */
+        /* LINKS                 */
+        /* ===================== */
+        .links-list { display:flex; flex-direction:column; gap:8px; }
+
+        .link-card {
+            position: relative;
+            display: flex; align-items:center; gap:16px;
+            padding: 18px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            text-decoration: none; color: var(--text);
+            overflow: hidden;
+            transition: all 0.25s ease;
+            animation: cardIn 0.6s ease backwards;
+        }
+
+        @keyframes cardIn {
+            from { opacity:0; transform:translateY(16px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+
+        .link-card::before {
+            content:'';
+            position: absolute; left:0; top:0; bottom:0;
+            width: 2px;
+            background: var(--gold);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .link-card:hover {
+            background: rgba(201,168,76,0.05);
+            border-color: rgba(201,168,76,0.35);
+            transform: translateX(6px);
+        }
+        .link-card:hover::before { opacity:1; }
+
+        .link-card:active { transform: translateX(3px) scale(0.99); }
+
+        /* SCAN LINE */
+        .link-card::after {
+            content:'';
+            position: absolute; top:0; left:-100%; right:0; bottom:0;
+            background: linear-gradient(90deg, transparent, rgba(201,168,76,0.04), transparent);
+            transition: left 0.4s ease;
+        }
+        .link-card:hover::after { left:100%; }
+
+        .card-num {
+            font-family: var(--mono);
+            font-size: 10px; color: var(--text-dim);
+            min-width: 18px; letter-spacing: 1px;
+        }
+
+        .card-icon {
+            width: 38px; height: 38px; flex-shrink:0;
+            background: var(--gold-dim);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex; align-items:center; justify-content:center;
+            transition: all 0.2s;
+        }
+        .card-icon svg { width:18px; height:18px; color:var(--gold); }
+        .link-card:hover .card-icon {
+            background: rgba(201,168,76,0.15);
+            border-color: var(--gold);
+            box-shadow: 0 0 12px rgba(201,168,76,0.2);
+        }
+
+        .card-body { flex:1; min-width:0; }
+        .card-title {
+            font-size: 14px; font-weight: 700;
+            letter-spacing: 2px; color: white;
+            text-transform: uppercase;
+            white-space: nowrap; overflow:hidden; text-overflow:ellipsis;
+            transition: color 0.2s;
+        }
+        .link-card:hover .card-title { color: var(--gold2); }
+        .card-desc {
+            font-family: var(--mono);
+            font-size: 9px; color: var(--text-dim);
+            letter-spacing: 1px; margin-top:3px;
+            white-space: nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+
+        .card-tag {
+            font-family: var(--mono);
+            font-size: 8px; letter-spacing: 2px;
+            color: var(--gold); opacity:0.6;
+            border: 1px solid var(--border);
+            padding: 2px 8px; border-radius: 2px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .card-arrow {
+            width:16px; height:16px; flex-shrink:0;
+            opacity:0; transition: opacity 0.2s, transform 0.2s;
+        }
+        .card-arrow svg { width:100%; height:100%; color:var(--gold); }
+        .link-card:hover .card-arrow { opacity:1; transform:translate(2px,-2px); }
+
+        /* SKELETON */
+        .link-skeleton {
+            height: 74px; border-radius:3px;
+            border: 1px solid rgba(201,168,76,0.06);
+            background: linear-gradient(90deg,
+                rgba(201,168,76,0.02) 25%,
+                rgba(201,168,76,0.05) 50%,
+                rgba(201,168,76,0.02) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.8s infinite;
+        }
+        @keyframes shimmer { to { background-position:-200% 0; } }
+
+        /* NO LINKS */
+        .no-links {
+            text-align:center; padding:40px 20px;
+            font-family: var(--mono);
+            font-size:10px; color:var(--text-dim);
+            letter-spacing:2px; line-height:2;
+        }
+
+        /* FOOTER */
+        .footer {
+            margin-top: auto; padding-top: 50px;
+            display: flex; flex-direction:column; align-items:center; gap:14px;
+        }
+        .footer-divider {
+            width:100%; height:1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+        .footer-sig {
+            display: flex; align-items:center; gap:12px;
+        }
+        .footer-label {
+            font-family: var(--mono);
+            font-size: 9px; letter-spacing: 3px; color: var(--text-dim);
+        }
+        .footer-diamond { color:var(--gold); font-size:8px; opacity:0.5; }
+        .footer-name {
+            font-family: var(--display);
+            font-size: 14px; letter-spacing: 5px;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(201,168,76,0.3);
+        }
+        .footer-year {
+            font-family: var(--mono);
+            font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+
+<!-- FUNDO -->
+<div class="bg-texture"></div>
+<div class="bg-vignette"></div>
+<div class="bg-line-h top"></div>
+<div class="bg-line-h bottom"></div>
+<div class="bg-line-v left"></div>
+<div class="bg-line-v right"></div>
+
+<!-- CORNERS -->
+<div class="corner c-tl"></div>
+<div class="corner c-tr"></div>
+<div class="corner c-bl"></div>
+<div class="corner c-br"></div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+    <div class="status-item"><div class="status-dot"></div>ONLINE</div>
+    <div class="status-item" id="clock">--:--:--</div>
+    <div class="status-item">NEURAL LINKS v2</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-classification">// CLASSIFIED PROFILE</div>
+
+        <div class="avatar-zone">
+            <div class="avatar-frame">
+                <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="30" cy="22" r="10" stroke="#c9a84c" stroke-width="1.2"/>
+                    <path d="M12 52 Q12 36 30 36 Q48 36 48 52" stroke="#c9a84c" stroke-width="1.2" stroke-linecap="round"/>
+                    <circle cx="30" cy="22" r="4" fill="#c9a84c" opacity="0.4"/>
+                    <circle cx="30" cy="22" r="1.5" fill="#e8c96a"/>
+                    <line x1="20" y1="42" x2="40" y2="42" stroke="#c9a84c" stroke-width="0.8" opacity="0.3"/>
+                    <line x1="16" y1="46" x2="44" y2="46" stroke="#c9a84c" stroke-width="0.8" opacity="0.2"/>
+                </svg>
+            </div>
+            <div class="avatar-orbit"></div>
+            <div class="avatar-badge">OPERATOR</div>
+        </div>
+
+        <div class="hero-name">DITOH</div>
+        <div class="hero-title">Founder &amp; Developer</div>
+    </div>
+
+    <!-- READOUT -->
+    <div class="readout">
+        <div class="readout-item">STATUS <span>ACTIVE</span></div>
+        <div class="readout-item" id="link-count">NODES <span>—</span></div>
+        <div class="readout-item">AXON <span>ECOSYSTEM</span></div>
+    </div>
+
+    <div class="section-divider">
+        <div class="divider-line"></div>
+        <div class="divider-diamond"></div>
+        <div class="divider-line"></div>
+    </div>
+
+    <!-- LINKS -->
+    <div class="links-list" id="links-container">
+        <div class="link-skeleton"></div>
+        <div class="link-skeleton" style="animation-delay:0.15s"></div>
+        <div class="link-skeleton" style="animation-delay:0.3s"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="footer-divider"></div>
+        <div class="footer-sig">
+            <span class="footer-label">FOUND & DEV</span>
+            <span class="footer-diamond">◆</span>
+            <span class="footer-name">DITOH</span>
+        </div>
+        <div class="footer-year" id="footer-year">© 2025</div>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyByydpIWB7QcNy1LsL1nKLxtiBBh4GKFs8",
+        authDomain: "neural-links.firebaseapp.com",
+        projectId: "neural-links",
+        storageBucket: "neural-links.firebasestorage.app",
+        messagingSenderId: "1040211261030",
+        appId: "1:1040211261030:web:2e8ea7a03bc21e45319fa7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // CLOCK
+    function tick() {
+        const n = new Date();
+        document.getElementById('clock').textContent =
+            String(n.getHours()).padStart(2,'0') + ':' +
+            String(n.getMinutes()).padStart(2,'0') + ':' +
+            String(n.getSeconds()).padStart(2,'0');
+    }
+    setInterval(tick, 1000); tick();
+
+    // YEAR
+    document.getElementById('footer-year').textContent = '© ' + new Date().getFullYear();
+
+    // ICONS
+    const icons = {
+        instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>`,
+        tiktok: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.79 1.52V6.76a4.85 4.85 0 01-1.02-.07z"/></svg>`,
+        github: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.167 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"/></svg>`,
+        youtube: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.488 3.45.029 5.804 0 12c.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0C23.512 20.55 23.971 18.196 24 12c-.029-6.185-.484-8.549-4.385-8.816zM9 16V8l8 3.993L9 16z"/></svg>`,
+        twitter: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+        globe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>`,
+        link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
+        brain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.64Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.64Z"/></svg>`
+    };
+
+    function detectIcon(url, type) {
+        if (type && icons[type]) return icons[type];
+        if (!url) return icons.link;
+        if (url.includes('instagram')) return icons.instagram;
+        if (url.includes('tiktok')) return icons.tiktok;
+        if (url.includes('github')) return icons.github;
+        if (url.includes('youtube')) return icons.youtube;
+        if (url.includes('twitter') || url.includes('x.com')) return icons.twitter;
+        if (url.includes('hubbrain') || url.includes('brain')) return icons.brain;
+        return icons.globe;
+    }
+
+    async function loadLinks() {
+        const container = document.getElementById('links-container');
+        try {
+            const q = query(collection(db, 'links'), orderBy('priority', 'asc'));
+            const snap = await getDocs(q);
+
+            container.innerHTML = '';
+
+            if (snap.empty) {
+                container.innerHTML = `<div class="no-links">// NO NODES ACTIVE<br>ACCESS ADMIN PANEL TO ADD LINKS</div>`;
+                document.querySelector('#link-count span').textContent = '0';
+                return;
+            }
+
+            const links = [];
+            snap.forEach(d => links.push({ id: d.id, ...d.data() }));
+            document.querySelector('#link-count span').textContent = links.length;
+
+            links.forEach((link, i) => {
+                const url = link.url?.startsWith('http') ? link.url : 'https://' + (link.url || '');
+                const card = document.createElement('a');
+                card.href = url;
+                card.target = '_blank';
+                card.rel = 'noopener noreferrer';
+                card.className = 'link-card';
+                card.style.animationDelay = `${i * 0.07}s`;
+                card.innerHTML = `
+                    <div class="card-num">${String(i+1).padStart(2,'0')}</div>
+                    <div class="card-icon">${detectIcon(url, link.icon)}</div>
+                    <div class="card-body">
+                        <div class="card-title">${link.title || url}</div>
+                        ${link.desc ? `<div class="card-desc">${link.desc}</div>` : ''}
+                    </div>
+                    ${link.tag ? `<div class="card-tag">${link.tag.toUpperCase()}</div>` : ''}
+                    <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div>
+                `;
+                container.appendChild(card);
+            });
+
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = `<div class="no-links">// CONNECTION ERROR</div>`;
+        }
+    }
+
+    loadLinks();
+</script>
+</body>
+</html>
